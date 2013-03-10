@@ -1,0 +1,3 @@
+ATTRS{manufacturer}=="FTDI",ATTRS{product}=="TTL232R",ATTRS{serial}=="FTFU5M3L", \
+SYMLINK+="omnirota_nmea", \
+MODE:="0666"
