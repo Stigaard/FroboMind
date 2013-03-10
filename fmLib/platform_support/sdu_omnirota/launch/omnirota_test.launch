@@ -1,0 +1,7 @@
+<launch>
+<node pkg="can_socketcan" type="can_socketcan_node" name="can">
+	<param name="device" value="can0" />
+	<param name="publisher_topic" value="/fmCSP/can0_rx" />
+	<param name="subscriber_topic" value="/fmCSP/can0_tx" />
+</node>
+</launch>
