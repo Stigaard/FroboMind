@@ -35,6 +35,7 @@
 #include <msgs/can.h>
 #include <msgs/steering_angle_cmd.h>
 #include <msgs/encoder.h>
+#include <msgs/nmea.h>
 #include <std_msgs/Bool.h>
 #include <geometry_msgs/TwistStamped.h>
 
@@ -99,8 +100,8 @@ private:
 		 */
 		geometry_msgs::TwistStamped 	cmd_vel_drive;
 		msgs::steering_angle_cmd 	cmd_pos_angle;
-//		msgs::nmea 					motor_command;
-		msgs::encoder 				raw_encoder, raw_encoder_edge;
+		msgs::nmea 					nmea_encoder_pos;
+		msgs::encoder 				raw_encoder, raw_encoder_out, raw_encoder_edge, raw_encoder_edge_out;
 		msgs::can					vel_can_msg, angle_vel_can_msg, pwr_on_msg;
 		/** @} */
 	} messages;
@@ -119,7 +120,7 @@ private:
 		std::string			raw_encoder;	//!< the encoder input from lower layers @type \ref encoder
 		std::string			encoder_edge;	//!< the encoder input from lower layers @type \ref encoder
 		std::string			deadman;		//!< the deadman input from higher layers @type \ref StringStamped
-//		std::string			nmea_sub;		//!< the nmea input from lower layers @type \ref nmea
+		std::string			nmea_sub;		//!< the nmea input from lower layers @type \ref nmea
 //		std::string			encoder_drive;	//!< the encoder input from lower layers @type \ref encoder
 //		std::string			nmea_pub;		//!< the nmea output to lower layers @type \ref nmea
 		/** @} */
@@ -137,7 +138,7 @@ private:
 		ros::Subscriber		raw_encoder;
 		ros::Subscriber		encoder_edge;
 		ros::Subscriber		deadman;
-//		ros::Subscriber		nmea;
+		ros::Subscriber		nmea;
 		/** @} */
 	} subscribers;
 
@@ -158,6 +159,8 @@ public:
 //		ros::Publisher		encoder_drive_vel;
 		ros::Publisher		encoder_angle_pos;
 		ros::Publisher		can_tx_cmd;
+		ros::Publisher		raw_encoder_out;
+		ros::Publisher		raw_encoder_edge_out;
 		/** @} */
 	} publishers;
 
@@ -171,7 +174,7 @@ public:
 	void on_raw_encoder(const msgs::encoder::ConstPtr&);
 	void on_encoder_edge(const msgs::encoder::ConstPtr&);
 	void on_deadman(const std_msgs::Bool::ConstPtr&);
-//	void on_encoder(const msgs::nmea::ConstPtr&);
+	void on_nmea(const msgs::nmea::ConstPtr& msg);
 	void on_timer(const ros::TimerEvent&);
 };
 /** @}*/
