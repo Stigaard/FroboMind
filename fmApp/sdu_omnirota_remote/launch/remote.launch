@@ -1,0 +1,46 @@
+<launch>
+	<group ns="fmLib">
+		<node pkg="omnirota" type="omnirota_node" name="omnirota_node" output="screen"/>
+		<node pkg="ackermann_ifk" type="ackermann_ifk_node" name="ackermann_ifk_node">
+			<param name="steering_angle_publisher_topic" value="/fmActuators/steering_angle"/>
+			<param name="cmd_vel_publisher_topic" value="/fmActuators/drive_velocity"/>
+			<param name="twist_subscriber_topic" value="/fmSignals/cmd_vel"/>
+			<param name="axle_distance_front_rear" value="2.5"/>
+		</node>
+		<node pkg="can_socketcan" type="can_socketcan_node" name="can">
+			<param name="device" value="can0" />
+			<param name="publisher_topic" value="/fmCSP/can0_rx" />
+			<param name="subscriber_topic" value="/fmCSP/can0_tx" />
+		</node>
+		<node pkg="serial_nmea" name="nmea_node" type="nmea_node">
+			<param name="str_to_msg_sub" value="/fmData/omnirota_rx" />   
+			<param name="str_to_msg_pub" value="/fmData/nmea_from_omnirota" />
+			<param name="msg_to_str_sub" value="/fmData/nmea_to_omnirota" />   
+			<param name="msg_to_str_pub" value="/fmData/omnirota_tx" />           
+			<param name="use_nmea_checksum" type="boolean" value="true" />
+		</node>
+		<node pkg="serial_string" name="serial_string_node" type="serial_string_node">
+			<param name="publisher_topic" value="/fmData/omnirota_rx" />	 
+			<param name="subscriber_topic" value="/fmData/omnirota_tx" />
+			<param name="device" value="/dev/omnirota_nmea" />	
+			<param name="baudrate" value="57600" />
+			<param name="termination_character" value="10"/>
+		</node> 
+		<node pkg="wiimote" type="wiimote_node.py" name="remote_control" respawn="true" />
+	</group>
+	<group ns="fmApp">
+		<node pkg="sdu_omnirota_remote" name="omnirota_remote" type="remote.py">
+    			<param name="deadman_topic" value="/fmSignals/deadman" />
+			<param name="cmd_vel_topic" value="/fmSignals/cmd_vel" />
+			<param name="max_linear_velocity" value="1.4"/>
+			<param name="max_angular_velocity" value="1.26"/>
+			<param name="deadband" value="5"/>
+			<param name="reduced_range" value="40"/>
+			<param name="feedback_topic" value="/fmLib/joy/set_feedback" />
+			<param name="joy_topic" value="/fmLib/joy" />
+			<param name="status_topic" value="/fmData/status"/>
+			<param name="publish_frequency" value="10"/>
+		</node>
+	</group>
+</launch>
+
