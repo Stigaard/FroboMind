@@ -42,8 +42,8 @@ double vehicle_length;
 
 void twistmsgCallbackHandler(const geometry_msgs::TwistStampedConstPtr& twist_msg) {
 
-	aes25_msg.header.stamp = twist_msg->header.stamp;
-	twist_cmd_out.header.stamp = twist_msg->header.stamp;
+	aes25_msg.header.stamp = twist_msg.header.stamp;
+	twist_cmd_out.header.stamp = twist_msg.header.stamp;
 
 	const double V = twist_msg->twist.linear.x; // velocity m/s
 	const double L = vehicle_length; // distance between back and frontwheels
@@ -70,9 +70,9 @@ int main(int argc, char **argv) {
 
 	std::string ASubot_wheel_publisher_topic;
 
-	nh.param<std::string> ("steering_angle_publisher_topic", ASubot_wheel_publisher_topic,"/fmKinematics/steering_angle_cmd");
-	nh.param<std::string> ("cmd_vel_publisher_topic", twist_publisher_topic,"/fmKinematics/cmd_vel");
-	nh.param<std::string> ("twist_subscriber_topic", twist_subscriber_topic,"/fmControllers/cmd_vel");
+	nh.param<std::string> ("steering_angle_publisher_topic", ASubot_wheel_publisher_topic,"/fmSignals/steering_angle_cmd");
+	nh.param<std::string> ("cmd_vel_publisher_topic", twist_publisher_topic,"/fmSignals/cmd_vel");
+	nh.param<std::string> ("twist_subscriber_topic", twist_subscriber_topic,"/fmCommands/cmd_vel");
 	nh.param<double> ("axle_distance_front_rear",vehicle_length,1.56);
 
 	wheel_pub = nh.advertise<msgs::steering_angle_cmd> (ASubot_wheel_publisher_topic.c_str(),1,1);
