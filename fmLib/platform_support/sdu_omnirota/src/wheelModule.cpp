@@ -101,8 +101,8 @@ void wheelModule::on_nmea(const msgs::nmea::ConstPtr& msg)
 void wheelModule::on_cmd_vel_drive(const geometry_msgs::TwistStamped::ConstPtr& msg)
 {
 	double wheel_circumference = (3.14f * parameters.wheel_diameter);
-	double gearing_ratio = 785; //Note verified, should get correct nr. from jma
-	double vel_to_motor_const = 60.0f / wheel_circumference*gearing_ratio;
+	double gearing_ratio = 54.24;
+	double vel_to_motor_const = 600.0f / wheel_circumference*gearing_ratio;
 	messages.cmd_vel_drive = *msg;
 	drive_vel_sp = messages.cmd_vel_drive.twist.linear.x * vel_to_motor_const;
 	int velocity = drive_vel_sp+0.5; //rpm
