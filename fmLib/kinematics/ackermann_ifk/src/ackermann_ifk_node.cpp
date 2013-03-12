@@ -42,8 +42,8 @@ double vehicle_length;
 
 void twistmsgCallbackHandler(const geometry_msgs::TwistStampedConstPtr& twist_msg) {
 
-	aes25_msg.header.stamp = twist_msg->header.stamp;
-	twist_cmd_out.header.stamp = twist_msg->header.stamp;
+	aes25_msg.header.stamp = ros::Time::now();
+	twist_cmd_out.header.stamp = ros::Time::now();
 
 	const double V = twist_msg->twist.linear.x; // velocity m/s
 	const double L = vehicle_length; // distance between back and frontwheels
