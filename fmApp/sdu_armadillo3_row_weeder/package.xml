@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>indoor_tracker</name>
+  <name>sdu_armadillo3_row_weeder</name>
   <version>0.0.0</version>
-  <description>The indoor_tracker package</description>
+  <description>The sdu_armadillo3_row_weeder package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://ros.org/wiki/indoor_tracker</url> -->
+  <!-- <url type="website">http://ros.org/wiki/sdu_armadillo3_row_weeder</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -41,8 +41,10 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>msgs</build_depend>
+  <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <run_depend>msgs</run_depend>
+  <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
 
 

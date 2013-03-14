@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #/****************************************************************************
-# FroboMind survey.py
+# FroboMind remote.py
 # Copyright (c) 2011-2013, author Leon Bonde Larsen <leon@bondelarsen.dk>
 # All rights reserved.
 #
@@ -31,59 +31,57 @@ import smach
 import smach_ros
 import actionlib
 import threading
-from wii_interface import wii_interface 
-from surveyor_smach.behaviours import measure_point
-from generic_smach.states import wii_states
-from nav_msgs.msg import Odometry    
+from generic_smach.behaviours import remote_behaviour
+from wii_interface import wii_interface
+from sdu_vibro_crop.msg import *
            
-class Mission():
+class mission():
     """    
         Top level user interface node implemented as a concurrence between wiimote interface and behaviour updater
     """
     def __init__(self):
         rospy.init_node('mission_control')
-        rospy.loginfo("mission control initialized")
         self.hmi = wii_interface.WiiInterface()
         self.hmi.register_callback_button_A(self.onButtonA)
-          
-    def build(self):
-         # Build the autonomous state as concurrence between wiimote and measuring behaviour to allow user preemption
-        autonomous = smach.Concurrence(  outcomes = ['exitAutomode'],
-                                                default_outcome = 'exitAutomode',
-                                                outcome_map = {'exitAutomode':{'HMI':'preempted','MEASURE':'preempted'}},
-                                                child_termination_cb = onPreempt)
-        with autonomous:
-            smach.Concurrence.add('HMI', wii_states.interfaceState(self.hmi))
-            smach.Concurrence.add('MEASURE', measure_point.build())
+        self.hmi.register_callback_button_up(self.onButtonUp)
+        self.hmi.register_callback_button_down(self.onButtonDown)
+        self.client = actionlib.SimpleActionClient('kongskilde_row_cleaner/move_tool', move_tool_simpleAction)
+        self.goal = move_tool_simpleGoal()
+        self.implement_state = 0
         
-        # Build the top level mission control from the remote control state and the autonomous state
-        mission_control = smach.StateMachine(outcomes=['preempted'])            
-        with mission_control:
-            smach.StateMachine.add('REMOTE_CONTROL', wii_states.remoteControlState(self.hmi), transitions={'enterAutomode':'AUTO_MODE','preempted':'preempted'})
-            smach.StateMachine.add('AUTO_MODE', autonomous, transitions={'exitAutomode':'REMOTE_CONTROL'})
-        return mission_control
-                       
-    def spin(self):    
-        sm = self.build()   
+    def spin(self): 
+        self.client.wait_for_server()  
+        sm = remote_behaviour.build(self.hmi) 
         sis = smach_ros.IntrospectionServer('StateMachineView', sm, '/SM_ROOT')           
-        sis.start() 
+        sis.start()    
         sm.execute()
         rospy.spin()
+        sm.request_preempt()
         sis.stop()
         
     def onButtonA(self):
         rospy.loginfo("A pressed")
-
-def onPreempt(outcome_map):
-    """
-        Preempts all other states on child termination. 
-        TODO: Find a way to avoid this being a global function...
-    """
-    return True
+        self.implement_state = 0
+        
+    def onButtonUp(self):
+        if not self.implement_state == 2  :
+            rospy.loginfo("Raising implement")
+            self.goal.direction = 0
+            self.goal.timeout = 10
+            self.client.send_goal(self.goal)
+            self.implement_state = 2
+        
+    def onButtonDown(self): 
+        if not self.implement_state == 1 :
+            rospy.loginfo("Lowering implement")    
+            self.goal.direction = 1
+            self.goal.timeout = 10
+            self.client.send_goal(self.goal)
+            self.implement_state = 1
     
 if __name__ == '__main__':
     try:
-        node = Mission()
+        node = mission()
         smach_thread = threading.Thread(target = node.spin)
         smach_thread.start()
     except rospy.ROSInterruptException:
