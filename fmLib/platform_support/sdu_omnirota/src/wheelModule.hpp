@@ -102,7 +102,7 @@ private:
 		msgs::steering_angle_cmd 	cmd_pos_angle;
 		msgs::nmea 					nmea_encoder_pos;
 		msgs::encoder 				raw_encoder, raw_encoder_out, raw_encoder_edge, raw_encoder_edge_out;
-		msgs::can					vel_can_msg, angle_vel_can_msg, pwr_on_msg;
+		msgs::can					vel_can_msg, angle_vel_can_msg, vel_pwr_on_msg, angle_pwr_on_msg;
 		/** @} */
 	} messages;
 

@@ -43,9 +43,9 @@ wheelModule::wheelModule()
 
 void wheelModule::makeItSpin( void )
 {
-	ROS_INFO("ROS_INFO");
-	ROS_WARN("ROS_WARN");
-	ROS_ERROR("ROS_ERROR");
+//	ROS_INFO("ROS_INFO");
+//	ROS_WARN("ROS_WARN");
+//	ROS_ERROR("ROS_ERROR");
 
 	local_node_handler.param<std::string>(	"cmd_vel_drive_sub", 	topics.cmd_vel_drive,	"/fmActuators/drive_velocity"	);
 	local_node_handler.param<std::string>(	"cmd_pos_angle_sub", 	topics.cmd_pos_angle,	"/fmActuators/steering_angle"	);
@@ -58,7 +58,7 @@ void wheelModule::makeItSpin( void )
 	local_node_handler.param<double>(		"wheel_diameter", 		parameters.wheel_diameter,	0.7		);
 	local_node_handler.param<double>(		"ticks_pr_round", 		parameters.ticks_pr_round,	42		);
 
-	local_node_handler.param<double>(		"angle_regulator_interval",	parameters.interval,		1	);
+	local_node_handler.param<double>(		"angle_regulator_interval",	parameters.interval,		0.05	);
 
 	subscribers.cmd_vel_drive = global_node_handler.subscribe<geometry_msgs::TwistStamped>(topics.cmd_vel_drive, 2,&wheelModule::on_cmd_vel_drive,this);
 	subscribers.cmd_pos_angle = global_node_handler.subscribe<msgs::steering_angle_cmd>(topics.cmd_pos_angle,2,&wheelModule::on_cmd_pos_angle,this);
@@ -76,10 +76,15 @@ void wheelModule::makeItSpin( void )
 
 	ros::Timer t1= global_node_handler.createTimer(ros::Duration(parameters.interval),&wheelModule::on_timer,this);
 
-	messages.pwr_on_msg.id = OMNIROTA_DRIVING_MOTOR_SEND;
-	messages.pwr_on_msg.flags = 0;
-	messages.pwr_on_msg.data[0] = OMNIROTA_CMD_POWER_ON;
-	messages.pwr_on_msg.length = 1;
+	messages.vel_pwr_on_msg.id = OMNIROTA_DRIVING_MOTOR_SEND;
+	messages.vel_pwr_on_msg.flags = 0;
+	messages.vel_pwr_on_msg.data[0] = OMNIROTA_CMD_POWER_ON;
+	messages.vel_pwr_on_msg.length = 1;
+
+	messages.angle_pwr_on_msg.id = OMNIROTA_STEERING_MOTOR_SEND;
+	messages.angle_pwr_on_msg.flags = 0;
+	messages.angle_pwr_on_msg.data[0] = OMNIROTA_CMD_POWER_ON;
+	messages.angle_pwr_on_msg.length = 1;
 
 	ros::spin();
 }
@@ -152,25 +157,33 @@ void wheelModule::on_deadman(const std_msgs::Bool::ConstPtr& msg)
 
 void wheelModule::on_timer(const ros::TimerEvent& e)
 {
-		const double angle_to_enc = 1024.0f/360.f;
-		const double P = 1;
+		const double angle_to_enc = 256.0/1.570796327;
+		const double P = 0.5;
 		
-		publishers.can_tx_cmd.publish(messages.pwr_on_msg);
+		publishers.can_tx_cmd.publish(messages.vel_pwr_on_msg);
+		publishers.can_tx_cmd.publish(messages.angle_pwr_on_msg);
 
 		angle_pos_sp = messages.cmd_pos_angle.steering_angle;
-		double sp = angle_pos_sp * angle_to_enc;
-		angle_encoder_pos = (int)(1024-angle_encoder_offset + messages.raw_encoder.encoderticks)%1024;
+		//0-1024 ≃-pi/2 pi/2
+		double offset = 290;
+//		double pos = (angle_pos_sp + 1.570796327)*(256.0/1.570796327);
+//		int ipos = (pos+offset)+0.5;
+		//this->setAngularVelocity(ipos%1024);
+		//return;
+		int sp = (int)((angle_pos_sp+1.570796327) * angle_to_enc)%1024;
+		angle_encoder_pos = (int)(1024-angle_encoder_offset + messages.raw_encoder.encoderticks +offset)%1024;
 		double err = sp - angle_encoder_pos;
 		double correction = err * P;
 		if(correction < 0)
 			correction *=-1;
-		if(correction>512)
-			correction = 512;
+		if(correction>255)
+			correction = 255;
 		double out;
 		if(sp>angle_encoder_pos)
-			out = (int)(1024+angle_encoder_pos + correction)%1024;
+			out = (int)(1024 + correction)%1024;
 		else
-			out = (int)(1024+angle_encoder_pos - correction)%1024;
+			out = (int)(1024 - correction)%1024;
+//		std::cout << "SP:" << sp << "	" << "pos:" << angle_encoder_pos << "	" << "err:" << err << "	" << "Correction:" << correction << "	" << "out:" << out << std::endl;
 	//build can message
 	int out_set = out+0.5f;
 	this->setAngularVelocity(out_set);
@@ -178,6 +191,7 @@ void wheelModule::on_timer(const ros::TimerEvent& e)
 
 void wheelModule::setVelocity(int velocity)
 {
+	velocity = -velocity;
 	messages.vel_can_msg.header.stamp = ros::Time::now();
 	messages.vel_can_msg.id = OMNIROTA_DRIVING_MOTOR_SEND;
 	messages.vel_can_msg.flags = 0;

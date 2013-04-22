@@ -1,6 +1,6 @@
 /****************************************************************************
  #
- # Copyright (c) 2011 Søren Hundevadt Nielsen <shn@kbm.sdu.dk>
+ # Copyright (c) 2011 Morten S. Laursen <msl@kbm.sdu.dk>
  #
  # Permission is hereby granted, free of charge, to any person obtaining a copy
  # of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,7 @@
  # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  # THE SOFTWARE.
  #
- *****************************************************************************
- # File: ASuBot_fwd_kinematics_node.cpp
- # Purpose: ASuBot forward kinematics.
- # Project: Field Robot - Vehicle Interface Computer
- # Author: Søren Hundevadt Nielsen <shn@kbm.sdu.dk>
- # Created: Aug 23, 2011 Søren Hundevadt Nielsen, Source written
- ****************************************************************************/
+ *****************************************************************************/
 
 #include "ros/ros.h"
 #include "geometry_msgs/TwistStamped.h"
@@ -50,7 +44,7 @@ void twistmsgCallbackHandler(const geometry_msgs::TwistStampedConstPtr& twist_ms
 
 	double omega = twist_msg->twist.angular.z;
 
-	aes25_msg.steering_angle = atan2(omega*L,V);
+	aes25_msg.steering_angle = omega;//atan2(omega*L,V);
 
 	twist_cmd_out.twist.linear.x = V;
 
@@ -60,7 +54,7 @@ void twistmsgCallbackHandler(const geometry_msgs::TwistStampedConstPtr& twist_ms
 
 int main(int argc, char **argv) {
 
-	ros::init(argc, argv, "ASuBot_twist_to_angle_node");
+	ros::init(argc, argv, "tricycle_ifk_node");
 
 	ros::NodeHandle nh("~");
 	ros::NodeHandle n;

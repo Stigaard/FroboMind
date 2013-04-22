@@ -1,7 +1,7 @@
 <launch>
 	<group ns="fmLib">
 		<node pkg="omnirota" type="omnirota_node" name="omnirota_node" output="screen"/>
-		<node pkg="ackermann_ifk" type="ackermann_ifk_node" name="ackermann_ifk_node">
+		<node pkg="tricycle_ifk" type="tricycle_ifk_node" name="tricycle_ifk_node">
 			<param name="steering_angle_publisher_topic" value="/fmActuators/steering_angle"/>
 			<param name="cmd_vel_publisher_topic" value="/fmActuators/drive_velocity"/>
 			<param name="twist_subscriber_topic" value="/fmSignals/cmd_vel"/>
@@ -33,7 +33,7 @@
     			<param name="deadman_topic" value="/fmSignals/deadman" />
 			<param name="cmd_vel_topic" value="/fmSignals/cmd_vel" />
 			<param name="max_linear_velocity" value="1.4"/>
-			<param name="max_angular_velocity" value="1.26"/>
+			<param name="max_angular_velocity" value="1.570796327"/>
 			<param name="deadband" value="5"/>
 			<param name="reduced_range" value="40"/>
 			<param name="feedback_topic" value="/fmLib/joy/set_feedback" />
